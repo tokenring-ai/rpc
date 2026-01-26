@@ -1,0 +1,159 @@
+import createTestingApp from "@tokenring-ai/app/test/createTestingApp";
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {z} from 'zod';
+import {createRPCEndpoint} from './createRPCEndpoint';
+import {RPCImplementation, RPCSchema} from './types';
+
+// Mock TokenRingApp
+vi.mock('@tokenring-ai/app', () => ({
+  default: class MockTokenRingApp {
+    serviceOutput = vi.fn();
+    serviceError = vi.fn();
+  }
+}));
+
+describe('createRPCEndpoint', () => {
+  let mockApp: any;
+  let schemas: RPCSchema;
+  let implementation: RPCImplementation<typeof schemas>;
+
+  beforeEach(() => {
+    mockApp = createTestingApp();
+    
+    schemas = {
+      name: "Example RPC",
+      path: '/api/rpc',
+      methods: {
+        testQuery: {
+          type: 'query' as const,
+          input: z.object({ message: z.string() }),
+          result: z.object({ response: z.string() })
+        },
+        testMutation: {
+          type: 'mutation' as const,
+          input: z.object({ value: z.number() }),
+          result: z.object({ doubled: z.number() })
+        },
+        testStream: {
+          type: 'stream' as const,
+          input: z.object({ count: z.number() }),
+          result: z.object({ number: z.number() })
+        }
+      }
+    };
+
+    implementation = {
+      testQuery: async (args: any, app: any) => {
+        return { response: `Hello ${args.message}` };
+      },
+      testMutation: async (args: any, app: any) => {
+        return { doubled: args.value * 2 };
+      },
+      testStream: async function* (args: any, app: any, signal: AbortSignal) {
+        for (let i = 0; i < args.count; i++) {
+          if (signal.aborted) break;
+          yield { number: i };
+        }
+      }
+    };
+  });
+
+  it('should create endpoint with correct path', () => {
+    const endpoint = createRPCEndpoint(schemas, implementation);
+    
+    expect(endpoint.path).toBe('/api/rpc');
+  });
+
+  it('should convert query method', () => {
+    const endpoint = createRPCEndpoint(schemas, implementation);
+    
+    expect(endpoint.methods.testQuery).toEqual({
+      type: 'query',
+      inputSchema: schemas.methods.testQuery.input,
+      resultSchema: schemas.methods.testQuery.result,
+      execute: implementation.testQuery
+    });
+  });
+
+  it('should convert mutation method', () => {
+    const endpoint = createRPCEndpoint(schemas, implementation);
+    
+    expect(endpoint.methods.testMutation).toEqual({
+      type: 'mutation',
+      inputSchema: schemas.methods.testMutation.input,
+      resultSchema: schemas.methods.testMutation.result,
+      execute: implementation.testMutation
+    });
+  });
+
+  it('should convert stream method', () => {
+    const endpoint = createRPCEndpoint(schemas, implementation);
+    
+    expect(endpoint.methods.testStream).toEqual({
+      type: 'stream',
+      inputSchema: schemas.methods.testStream.input,
+      resultSchema: schemas.methods.testStream.result,
+      execute: implementation.testStream
+    });
+  });
+
+  it('should handle empty methods', () => {
+    const emptySchemas: RPCSchema = {
+      name: "Example RPC",
+      path: '/api/empty',
+      methods: {}
+    };
+
+    const emptyImplementation: RPCImplementation<typeof emptySchemas> = {};
+    
+    const endpoint = createRPCEndpoint(emptySchemas, emptyImplementation);
+    
+    expect(endpoint.path).toBe('/api/empty');
+    expect(Object.keys(endpoint.methods)).toHaveLength(0);
+  });
+
+  it('should preserve method implementations', () => {
+    const endpoint = createRPCEndpoint(schemas, implementation);
+    
+    const result = endpoint.methods.testQuery.execute(
+      { message: 'world' },
+      mockApp
+    );
+    
+    expect(result).toBeInstanceOf(Promise);
+  });
+
+  it('should handle single method', () => {
+    const singleMethodSchemas: RPCSchema = {
+      name: "Single Method RPC",
+      path: '/api/single',
+      methods: {
+        ping: {
+          type: 'query' as const,
+          input: z.object({}),
+          result: z.object({ pong: z.boolean() })
+        }
+      }
+    };
+
+    const singleMethodImplementation: RPCImplementation<typeof singleMethodSchemas> = {
+      ping: async (args: any, app: any) => ({ pong: true })
+    };
+    
+    const endpoint = createRPCEndpoint(singleMethodSchemas, singleMethodImplementation);
+    
+    expect(endpoint.path).toBe('/api/single');
+    expect(Object.keys(endpoint.methods)).toHaveLength(1);
+    expect(endpoint.methods.ping).toBeDefined();
+  });
+
+  it('should handle mixed method types', () => {
+    const endpoint = createRPCEndpoint(schemas, implementation);
+    
+    const methods = endpoint.methods;
+    
+    expect(methods.testQuery.type).toBe('query');
+    expect(methods.testMutation.type).toBe('mutation');
+    expect(methods.testStream.type).toBe('stream');
+  });
+});
