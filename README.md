@@ -25,34 +25,29 @@ bun install @tokenring-ai/rpc
 Main service that manages RPC endpoints using a TypedRegistry.
 
 ```typescript
-export default class RpcService implements TokenRingService {
-  name = "RpcService";
-  description = "RPC endpoint registry and execution service";
+import RpcService from '@tokenring-ai/rpc';
 
-  registerEndpoint(name: string, endpoint: RpcEndpoint): void;
-  getEndpoint(name: string): RpcEndpoint | undefined;
-  getAllEndpoints(): RpcEndpoint[];
-}
+// Create and register the service
+const rpcService = new RpcService();
+app.addServices(rpcService);
+
+// Register endpoints
+rpcService.registerEndpoint('myservice', endpoint);
+
+// Get endpoint
+const endpoint = rpcService.getEndpoint('myservice');
+
+// Get all endpoints
+const allEndpoints = rpcService.getAllEndpoints();
 ```
 
 ### Types
 
 ```typescript
-export type RpcMethod<InputSchema, ResultSchema, Type> = {
-  type: Type; // "query" | "mutation" | "stream"
-  inputSchema: InputSchema;
-  resultSchema: ResultSchema;
-  execute: Type extends "stream"
-    ? (args: z.infer<InputSchema>, app: TokenRingApp, signal: AbortSignal) => AsyncGenerator<z.infer<ResultSchema>>
-    : (args: z.infer<InputSchema>, app: TokenRingApp) => z.infer<ResultSchema>;
-};
+import TokenRingApp from '@tokenring-ai/app';
+import {z} from 'zod';
 
-export type RpcEndpoint = {
-  name: string;
-  path: string;
-  methods: Record<string, RpcMethod<any, any, any>>;
-};
-
+// RPCSchema defines the structure of an endpoint
 export type RPCSchema = {
   name: string;
   path: string;
@@ -63,7 +58,31 @@ export type RPCSchema = {
       result: z.ZodSchema;
     };
   };
-};
+}
+
+// RPCImplementation defines the function signatures for each method
+export type RPCImplementation<T extends RPCSchema> = {
+  [P in keyof T["methods"]]: T["methods"][P]["type"] extends "stream"
+    ? (args: z.infer<T["methods"][P]["input"]>, app: TokenRingApp, signal: AbortSignal) => AsyncGenerator<z.infer<T["methods"][P]["result"]>>
+    : (args: z.infer<T["methods"][P]["input"]>, app: TokenRingApp) => Promise<z.infer<T["methods"][P]["result"]>> | z.infer<T["methods"][P]["result"]>;
+}
+
+// RpcEndpoint represents a single RPC endpoint with all its methods
+export type RpcEndpoint = {
+  name: string;
+  path: string;
+  methods: Record<string, RpcMethod<any, any, any>>;
+}
+
+// RpcMethod represents a single method within an endpoint
+export type RpcMethod<InputSchema extends z.ZodObject<any>, ResultSchema extends z.ZodTypeAny, Type extends "query" | "mutation" | "stream"> = {
+  type: Type;
+  inputSchema: InputSchema;
+  resultSchema: ResultSchema;
+  execute: Type extends "stream"
+    ? (args: z.infer<InputSchema>, app: TokenRingApp, signal: AbortSignal) => AsyncGenerator<z.infer<ResultSchema>>
+    : (args: z.infer<InputSchema>, app: TokenRingApp) => z.infer<ResultSchema> | Promise<z.infer<ResultSchema>>;
+}
 ```
 
 ### createRPCEndpoint
@@ -71,10 +90,28 @@ export type RPCSchema = {
 Helper function to create type-safe RPC endpoints from schemas and implementations.
 
 ```typescript
-function createRPCEndpoint<T extends RPCSchema>(
-  schemas: T,
-  implementation: RPCImplementation<T>
-): RpcEndpoint;
+import {createRPCEndpoint} from '@tokenring-ai/rpc/createRPCEndpoint';
+
+const endpoint = createRPCEndpoint(schemas, implementation);
+```
+
+### Plugin
+
+The package includes a plugin configuration for easy integration.
+
+```typescript
+import packageJSON from "./package.json" with {type: "json"};
+import RpcService from "./RpcService.ts";
+
+export default {
+  name: packageJSON.name,
+  version: packageJSON.version,
+  description: packageJSON.description,
+  install(app, config) {
+    app.addServices(new RpcService());
+  },
+  config: packageConfigSchema
+} satisfies TokenRingPlugin<typeof packageConfigSchema>;
 ```
 
 ## Usage Examples
@@ -207,16 +244,16 @@ export default {
           }
         }
       };
-      
+
       const impl = {
         ping: async (args, app) => ({ pong: true })
       };
-      
+
       const endpoint = createRPCEndpoint(schemas, impl);
       rpcService.registerEndpoint('myplugin', endpoint);
     });
   }
-} satisfies TokenRingPlugin;
+} satisfies TokenRingPlugin<typeof packageConfigSchema>;
 ```
 
 ## Dependencies
