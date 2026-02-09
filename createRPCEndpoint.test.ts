@@ -19,7 +19,7 @@ describe('createRPCEndpoint', () => {
 
   beforeEach(() => {
     mockApp = createTestingApp();
-    
+
     schemas = {
       name: "Example RPC",
       path: '/api/rpc',
@@ -38,21 +38,6 @@ describe('createRPCEndpoint', () => {
           type: 'stream' as const,
           input: z.object({ count: z.number() }),
           result: z.object({ number: z.number() })
-        }
-      }
-    };
-
-    implementation = {
-      testQuery: async (args: any, app: any) => {
-        return { response: `Hello ${args.message}` };
-      },
-      testMutation: async (args: any, app: any) => {
-        return { doubled: args.value * 2 };
-      },
-      testStream: async function* (args: any, app: any, signal: AbortSignal) {
-        for (let i = 0; i < args.count; i++) {
-          if (signal.aborted) break;
-          yield { number: i };
         }
       }
     };

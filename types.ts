@@ -26,7 +26,7 @@ export type RpcMethod<InputSchema extends z.ZodObject<any>, ResultSchema extends
     : (args: z.infer<InputSchema>, app: TokenRingApp) => z.infer<ResultSchema>;
 };
 export type RpcEndpoint = {
-  name: string;
+  readonly name: string;
   path: string;
   methods: Record<string, RpcMethod<any, any, any>>;
 }
