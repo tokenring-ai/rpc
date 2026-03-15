@@ -12,5 +12,15 @@
     "./*": "./*.ts"
   },
   "license": "MIT",
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "vitest": "^4.1.0",
+    "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "build": "tsc --noEmit"
+  }
 }
