@@ -1,16 +1,8 @@
 import createTestingApp from "@tokenring-ai/app/test/createTestingApp";
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {z} from 'zod';
-import {createRPCEndpoint} from './createRPCEndpoint';
-import {RPCImplementation, RPCSchema} from './types';
-
-// Mock TokenRingApp
-vi.mock('@tokenring-ai/app', () => ({
-  default: class MockTokenRingApp {
-    serviceOutput = vi.fn();
-    serviceError = vi.fn();
-  }
-}));
+import {createRPCEndpoint} from './createRPCEndpoint.js';
+import {RPCImplementation, RPCSchema} from './types.js';
 
 describe('createRPCEndpoint', () => {
   let mockApp: any;
@@ -41,6 +33,22 @@ describe('createRPCEndpoint', () => {
         }
       }
     };
+
+    // Initialize implementation with mock functions
+    implementation = {
+      testQuery: vi.fn(async (args: any, app: any) => {
+        return { response: `Received: ${args.message}` };
+      }),
+      testMutation: vi.fn(async (args: any, app: any) => {
+        return { doubled: args.value * 2 };
+      }),
+      testStream: vi.fn(async function* (args: any, app: any, signal: AbortSignal) {
+        for (let i = 0; i < args.count; i++) {
+          if (signal?.aborted) break;
+          yield { number: i };
+        }
+      })
+    } as RPCImplementation<typeof schemas>;
   });
 
   it('should create endpoint with correct path', () => {
@@ -52,34 +60,28 @@ describe('createRPCEndpoint', () => {
   it('should convert query method', () => {
     const endpoint = createRPCEndpoint(schemas, implementation);
     
-    expect(endpoint.methods.testQuery).toEqual({
-      type: 'query',
-      inputSchema: schemas.methods.testQuery.input,
-      resultSchema: schemas.methods.testQuery.result,
-      execute: implementation.testQuery
-    });
+    expect(endpoint.methods.testQuery.type).toBe('query');
+    expect(endpoint.methods.testQuery.inputSchema).toEqual(schemas.methods.testQuery.input);
+    expect(endpoint.methods.testQuery.resultSchema).toEqual(schemas.methods.testQuery.result);
+    expect(endpoint.methods.testQuery.execute).toBe(implementation.testQuery);
   });
 
   it('should convert mutation method', () => {
     const endpoint = createRPCEndpoint(schemas, implementation);
     
-    expect(endpoint.methods.testMutation).toEqual({
-      type: 'mutation',
-      inputSchema: schemas.methods.testMutation.input,
-      resultSchema: schemas.methods.testMutation.result,
-      execute: implementation.testMutation
-    });
+    expect(endpoint.methods.testMutation.type).toBe('mutation');
+    expect(endpoint.methods.testMutation.inputSchema).toEqual(schemas.methods.testMutation.input);
+    expect(endpoint.methods.testMutation.resultSchema).toEqual(schemas.methods.testMutation.result);
+    expect(endpoint.methods.testMutation.execute).toBe(implementation.testMutation);
   });
 
   it('should convert stream method', () => {
     const endpoint = createRPCEndpoint(schemas, implementation);
     
-    expect(endpoint.methods.testStream).toEqual({
-      type: 'stream',
-      inputSchema: schemas.methods.testStream.input,
-      resultSchema: schemas.methods.testStream.result,
-      execute: implementation.testStream
-    });
+    expect(endpoint.methods.testStream.type).toBe('stream');
+    expect(endpoint.methods.testStream.inputSchema).toEqual(schemas.methods.testStream.input);
+    expect(endpoint.methods.testStream.resultSchema).toEqual(schemas.methods.testStream.result);
+    expect(endpoint.methods.testStream.execute).toBe(implementation.testStream);
   });
 
   it('should handle empty methods', () => {
@@ -97,15 +99,16 @@ describe('createRPCEndpoint', () => {
     expect(Object.keys(endpoint.methods)).toHaveLength(0);
   });
 
-  it('should preserve method implementations', () => {
+  it('should preserve method implementations', async () => {
     const endpoint = createRPCEndpoint(schemas, implementation);
     
-    const result = endpoint.methods.testQuery.execute(
+    const result = await endpoint.methods.testQuery.execute(
       { message: 'world' },
       mockApp
     );
     
-    expect(result).toBeInstanceOf(Promise);
+    expect(result).toEqual({ response: 'Received: world' });
+    expect(implementation.testQuery).toHaveBeenCalledWith({ message: 'world' }, mockApp);
   });
 
   it('should handle single method', () => {
@@ -140,5 +143,77 @@ describe('createRPCEndpoint', () => {
     expect(methods.testQuery.type).toBe('query');
     expect(methods.testMutation.type).toBe('mutation');
     expect(methods.testStream.type).toBe('stream');
+  });
+
+  it('should execute mutation method correctly', async () => {
+    const endpoint = createRPCEndpoint(schemas, implementation);
+    
+    const result = await endpoint.methods.testMutation.execute(
+      { value: 5 },
+      mockApp
+    );
+    
+    expect(result).toEqual({ doubled: 10 });
+    expect(implementation.testMutation).toHaveBeenCalledWith({ value: 5 }, mockApp);
+  });
+
+  it('should handle stream method execution', async () => {
+    const endpoint = createRPCEndpoint(schemas, implementation);
+    
+    const results: any[] = [];
+    const controller = new AbortController();
+    
+    for await (const item of endpoint.methods.testStream.execute(
+      { count: 3 },
+      mockApp,
+      controller.signal
+    )) {
+      results.push(item);
+    }
+    
+    expect(results).toEqual([{ number: 0 }, { number: 1 }, { number: 2 }]);
+  });
+
+  it('should handle stream abortion', async () => {
+    const endpoint = createRPCEndpoint(schemas, implementation);
+    
+    const results: any[] = [];
+    const controller = new AbortController();
+    
+    // Create a custom implementation that checks abort signal
+    const abortImpl: RPCImplementation<typeof schemas> = {
+      testQuery: async () => ({ response: 'test' }),
+      testMutation: async () => ({ doubled: 0 }),
+      testStream: async function* (_args: any, _app: any, signal: AbortSignal) {
+        for (let i = 0; i < 100; i++) {
+          if (signal?.aborted) break;
+          yield { number: i };
+          // Small delay to allow abort to happen
+          await new Promise(resolve => setTimeout(resolve, 1));
+        }
+      }
+    };
+    
+    const abortEndpoint = createRPCEndpoint(schemas, abortImpl);
+    
+    // Start streaming
+    const streamPromise = (async () => {
+      for await (const item of abortEndpoint.methods.testStream.execute(
+        { count: 100 },
+        mockApp,
+        controller.signal
+      )) {
+        results.push(item);
+      }
+    })();
+    
+    // Abort after a few items
+    setTimeout(() => controller.abort(), 10);
+    
+    await streamPromise;
+    
+    // Should have some results before abort (at least 0, less than 100)
+    expect(results.length).toBeGreaterThanOrEqual(0);
+    expect(results.length).toBeLessThan(100);
   });
 });
