@@ -1,8 +1,8 @@
 import createTestingApp from "@tokenring-ai/app/test/createTestingApp";
-import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {z} from 'zod';
-import {createRPCEndpoint} from './createRPCEndpoint.ts';
-import {RPCImplementation, RPCSchema} from './types.ts';
+import {beforeEach, describe, expect, it, vi} from "vitest";
+import {z} from "zod";
+import {createRPCEndpoint} from "./createRPCEndpoint.ts";
+import {RPCImplementation, RPCSchema} from "./types.ts";
 
 describe('createRPCEndpoint', () => {
   let mockApp: any;
