@@ -22,16 +22,16 @@ export type RpcMethod<InputSchema extends z.ZodObject<any>, ResultSchema extends
   inputSchema: InputSchema;
   resultSchema: ResultSchema;
   execute: Type extends "stream"
-    ? (args: z.infer<InputSchema>, app: TokenRingApp, signal: AbortSignal) => AsyncGenerator<z.infer<ResultSchema>>
-    : (args: z.infer<InputSchema>, app: TokenRingApp) => z.infer<ResultSchema>;
+    ? (args: z.output<InputSchema>, app: TokenRingApp, signal: AbortSignal) => AsyncGenerator<z.input<ResultSchema>>
+    : (args: z.output<InputSchema>, app: TokenRingApp) => z.input<ResultSchema>;
 };
 export type RpcEndpoint = {
   readonly name: string;
   path: string;
   methods: Record<string, RpcMethod<any, any, any>>;
 }
-export type ResultOfRPCCall<T extends RPCSchema, K extends keyof T["methods"]> = z.infer<T["methods"][K]["result"]>;
-export type ParamsOfRPCCall<T extends RPCSchema, K extends keyof T["methods"]> = z.infer<T["methods"][K]["input"]>;
+export type ResultOfRPCCall<T extends RPCSchema, K extends keyof T["methods"]> = z.output<T["methods"][K]["result"]>;
+export type ParamsOfRPCCall<T extends RPCSchema, K extends keyof T["methods"]> = z.input<T["methods"][K]["input"]>;
 export type FunctionTypeOfRPCCall<T extends RPCSchema, K extends keyof T["methods"]> = T["methods"][K]["type"] extends "stream"
   ? (params: ParamsOfRPCCall<T, K>, signal: AbortSignal) => AsyncGenerator<ResultOfRPCCall<T, K>>
   : (params: ParamsOfRPCCall<T, K>) => Promise<ResultOfRPCCall<T, K>>;

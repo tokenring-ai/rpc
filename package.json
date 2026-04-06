@@ -1,7 +1,7 @@
 {
   "name": "@tokenring-ai/rpc",
   "version": "0.2.0",
-  "description": "RPC service for Token Ring",
+  "description": "Communication bridge for connecting external RPC protocols to internal functions.",
   "dependencies": {
     "@tokenring-ai/app": "0.2.0",
     "@tokenring-ai/utility": "0.2.0",
