@@ -1,5 +1,5 @@
-import type {RPCSchema, RpcEndpoint, FunctionTypeOfRPCCall} from "./types.ts";
 import TokenRingApp from "@tokenring-ai/app";
+import type {FunctionTypeOfRPCCall, RpcEndpoint, RPCSchema} from "./types.ts";
 
 /**
  * Creates an RPC client that calls the endpoint methods directly in-process.
