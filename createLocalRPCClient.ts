@@ -1,4 +1,4 @@
-import TokenRingApp from "@tokenring-ai/app";
+import type TokenRingApp from "@tokenring-ai/app";
 import type {FunctionTypeOfRPCCall, RpcEndpoint, RPCSchema} from "./types.ts";
 
 /**
@@ -7,7 +7,7 @@ import type {FunctionTypeOfRPCCall, RpcEndpoint, RPCSchema} from "./types.ts";
  */
 export default function createLocalRPCClient<T extends RPCSchema>(
   endpoint: RpcEndpoint,
-  app: TokenRingApp
+  app: TokenRingApp,
 ) {
   return Object.fromEntries(
     Object.keys(endpoint.methods).map((name) => {
@@ -29,7 +29,7 @@ export default function createLocalRPCClient<T extends RPCSchema>(
             return await method.execute(params, app, undefined as any);
           },
       ];
-    })
+    }),
   ) as {
     [K in keyof T["methods"]]: FunctionTypeOfRPCCall<T, K>;
   };
