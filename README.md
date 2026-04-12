@@ -30,6 +30,7 @@ bun add @tokenring-ai/rpc
 The main service that manages RPC endpoints using a KeyedRegistry. Implements the `TokenRingService` interface.
 
 **Class Signature:**
+
 ```typescript
 export default class RpcService implements TokenRingService {
   readonly name: string;
@@ -43,15 +44,18 @@ export default class RpcService implements TokenRingService {
 ```
 
 **Properties:**
+
 - `name`: Service identifier ("RpcService")
 - `description`: Service description ("RPC endpoint registry and execution service")
 
 **Methods:**
+
 - `getEndpoint(name: string)`: Retrieves an endpoint by name
 - `getAllEndpoints()`: Returns all registered endpoints
 - `registerEndpoint(endpoint: RpcEndpoint)`: Registers a new endpoint
 
 **Usage:**
+
 ```typescript
 import RpcService from '@tokenring-ai/rpc';
 
@@ -74,6 +78,7 @@ const allEndpoints = rpcService.getAllEndpoints();
 Helper function to create type-safe RPC endpoints from schemas and implementations.
 
 **Function Signature:**
+
 ```typescript
 export function createRPCEndpoint<T extends RPCSchema>(
   schemas: T,
@@ -82,13 +87,16 @@ export function createRPCEndpoint<T extends RPCSchema>(
 ```
 
 **Parameters:**
+
 - `schemas`: RPCSchema defining the endpoint structure
 - `implementation`: RPCImplementation with method implementations
 
 **Returns:**
+
 - `RpcEndpoint`: Type-safe endpoint with all methods bound
 
 **Usage:**
+
 ```typescript
 import {createRPCEndpoint} from '@tokenring-ai/rpc/createRPCEndpoint';
 import {z} from 'zod';
@@ -101,6 +109,7 @@ const endpoint = createRPCEndpoint(schemas, implementation);
 Creates an RPC client that calls endpoint methods directly in-process. Useful for tests or when the UI and Backend run in the same process.
 
 **Function Signature:**
+
 ```typescript
 export default function createLocalRPCClient<T extends RPCSchema>(
   endpoint: RpcEndpoint,
@@ -111,13 +120,16 @@ export default function createLocalRPCClient<T extends RPCSchema>(
 ```
 
 **Parameters:**
+
 - `endpoint`: The RPC endpoint to create a client for
 - `app`: TokenRingApp instance for method execution
 
 **Returns:**
+
 - Object with methods matching the endpoint's schema
 
 **Usage:**
+
 ```typescript
 import createLocalRPCClient from '@tokenring-ai/rpc/createLocalRPCClient';
 
@@ -426,6 +438,7 @@ app.install(rpcPlugin); // No config needed
 ```
 
 The plugin automatically:
+
 1. Registers the RpcService with the application
 2. Provides the RPC endpoint registry for plugins to use
 
@@ -451,6 +464,7 @@ Then register your endpoints as needed.
 **Purpose:** Centralized RPC endpoint registry and execution service
 
 **Registration (Manual):**
+
 ```typescript
 import RpcService from '@tokenring-ai/rpc';
 
@@ -478,6 +492,7 @@ The RPC package uses standard TypeScript/JavaScript error handling patterns. Met
 - **Stream Aborted**: Streaming methods check the abort signal and may stop yielding values.
 
 **Error Handling Example:**
+
 ```typescript
 try {
   const endpoint = rpcService.getEndpoint('myservice');
@@ -495,6 +510,7 @@ try {
 ```
 
 **Stream Cancellation:**
+
 ```typescript
 const controller = new AbortController();
 
