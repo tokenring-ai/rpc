@@ -8,10 +8,10 @@ export default class RpcService implements TokenRingService {
 
   private endpoints = new KeyedRegistry<RpcEndpoint>();
 
-  getEndpoint = this.endpoints.getItemByName;
-  getAllEndpoints = this.endpoints.getAllItemValues;
+  getEndpoint = this.endpoints.get;
+  getAllEndpoints = this.endpoints.valuesArray;
 
   registerEndpoint(endpoint: RpcEndpoint) {
-    this.endpoints.register(endpoint.name, endpoint);
+    this.endpoints.set(endpoint.name, endpoint);
   }
 }
