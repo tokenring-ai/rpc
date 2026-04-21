@@ -1,19 +1,10 @@
 import type TokenRingApp from "@tokenring-ai/app";
-import type {z} from "zod";
+import type { z } from "zod";
 
 export type RPCImplementation<T extends RPCSchema> = {
   [P in keyof T["methods"]]: T["methods"][P]["type"] extends "stream"
-    ? (
-      args: z.infer<T["methods"][P]["input"]>,
-      app: TokenRingApp,
-      signal: AbortSignal,
-    ) => AsyncGenerator<z.infer<T["methods"][P]["result"]>>
-    : (
-      args: z.infer<T["methods"][P]["input"]>,
-      app: TokenRingApp,
-    ) =>
-      | Promise<z.infer<T["methods"][P]["result"]>>
-      | z.infer<T["methods"][P]["result"]>;
+    ? (args: z.infer<T["methods"][P]["input"]>, app: TokenRingApp, signal: AbortSignal) => AsyncGenerator<z.infer<T["methods"][P]["result"]>>
+    : (args: z.infer<T["methods"][P]["input"]>, app: TokenRingApp) => Promise<z.infer<T["methods"][P]["result"]>> | z.infer<T["methods"][P]["result"]>;
 };
 export type RPCSchema = {
   name: string;
@@ -26,20 +17,12 @@ export type RPCSchema = {
     };
   };
 };
-export type RpcMethod<
-  InputSchema extends z.ZodObject<any>,
-  ResultSchema extends z.ZodTypeAny,
-  Type extends "query" | "mutation" | "stream",
-> = {
+export type RpcMethod<InputSchema extends z.ZodObject<any>, ResultSchema extends z.ZodTypeAny, Type extends "query" | "mutation" | "stream"> = {
   type: Type;
   inputSchema: InputSchema;
   resultSchema: ResultSchema;
   execute: Type extends "stream"
-    ? (
-      args: z.output<InputSchema>,
-      app: TokenRingApp,
-      signal: AbortSignal,
-    ) => AsyncGenerator<z.input<ResultSchema>>
+    ? (args: z.output<InputSchema>, app: TokenRingApp, signal: AbortSignal) => AsyncGenerator<z.input<ResultSchema>>
     : (args: z.output<InputSchema>, app: TokenRingApp) => z.input<ResultSchema>;
 };
 export type RpcEndpoint = {
@@ -47,20 +30,8 @@ export type RpcEndpoint = {
   path: string;
   methods: Record<string, RpcMethod<any, any, any>>;
 };
-export type ResultOfRPCCall<
-  T extends RPCSchema,
-  K extends keyof T["methods"],
-> = z.output<T["methods"][K]["result"]>;
-export type ParamsOfRPCCall<
-  T extends RPCSchema,
-  K extends keyof T["methods"],
-> = z.input<T["methods"][K]["input"]>;
-export type FunctionTypeOfRPCCall<
-  T extends RPCSchema,
-  K extends keyof T["methods"],
-> = T["methods"][K]["type"] extends "stream"
-  ? (
-    params: ParamsOfRPCCall<T, K>,
-    signal: AbortSignal,
-  ) => AsyncGenerator<ResultOfRPCCall<T, K>>
+export type ResultOfRPCCall<T extends RPCSchema, K extends keyof T["methods"]> = z.output<T["methods"][K]["result"]>;
+export type ParamsOfRPCCall<T extends RPCSchema, K extends keyof T["methods"]> = z.input<T["methods"][K]["input"]>;
+export type FunctionTypeOfRPCCall<T extends RPCSchema, K extends keyof T["methods"]> = T["methods"][K]["type"] extends "stream"
+  ? (params: ParamsOfRPCCall<T, K>, signal: AbortSignal) => AsyncGenerator<ResultOfRPCCall<T, K>>
   : (params: ParamsOfRPCCall<T, K>) => Promise<ResultOfRPCCall<T, K>>;

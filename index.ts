@@ -1,1 +1,1 @@
-export {default as RpcService} from "./RpcService.ts";
+export { default as RpcService } from "./RpcService.ts";

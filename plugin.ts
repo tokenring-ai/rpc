@@ -1,8 +1,8 @@
-import type {TokenRingPlugin} from "@tokenring-ai/app";
+import type { TokenRingPlugin } from "@tokenring-ai/app";
 import appRPC from "@tokenring-ai/app/rpc/app";
-import {z} from "zod";
+import { z } from "zod";
 
-import packageJSON from "./package.json" with {type: "json"};
+import packageJSON from "./package.json" with { type: "json" };
 import RpcService from "./RpcService.ts";
 
 const packageConfigSchema = z.object({});

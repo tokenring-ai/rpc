@@ -1,9 +1,6 @@
-import type {RpcEndpoint, RPCImplementation, RPCSchema} from "./types.ts";
+import type { RPCImplementation, RPCSchema, RpcEndpoint } from "./types.ts";
 
-export function createRPCEndpoint<T extends RPCSchema>(
-  schemas: T,
-  implementation: RPCImplementation<T>,
-) {
+export function createRPCEndpoint<T extends RPCSchema>(schemas: T, implementation: RPCImplementation<T>) {
   return {
     name: schemas.name,
     path: schemas.path,
