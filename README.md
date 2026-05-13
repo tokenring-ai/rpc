@@ -2,16 +2,19 @@
 
 ## Overview
 
-The RPC (Remote Procedure Call) service provides a centralized, type-safe mechanism for registering and executing remote procedures within the Token Ring ecosystem. This package enables plugins to register RPC endpoints with type-safe schemas and implementations, supporting queries, mutations, and streaming methods through a KeyedRegistry-based architecture.
+The RPC (Remote Procedure Call) service provides a centralized, type-safe mechanism for registering and executing remote
+procedures within the Token Ring ecosystem. This package enables plugins to register RPC endpoints with type-safe
+schemas and implementations, supporting queries, mutations, and streaming methods through a KeyedRegistry-based
+architecture.
 
 ## Key Features
 
 - **Centralized Registry**: KeyedRegistry for managing RPC endpoints with type safety
 - **Type-Safe Operations**: Full TypeScript support with Zod schema validation
 - **Three Method Types**:
-  - **Query**: Read-only operations that return a single value
-  - **Mutation**: State-changing operations that modify data
-  - **Stream**: Asynchronous generators for real-time data streams
+- **Query**: Read-only operations that return a single value
+- **Mutation**: State-changing operations that modify data
+- **Stream**: Asynchronous generators for real-time data streams
 - **Schema-First Design**: Separate schema definitions from implementation logic
 - **Local Client**: `createLocalRPCClient` for direct in-process endpoint calls
 - **Plugin Integration**: Seamless integration with web-host and other services
@@ -106,7 +109,8 @@ const endpoint = createRPCEndpoint(schemas, implementation);
 
 ### createLocalRPCClient
 
-Creates an RPC client that calls endpoint methods directly in-process. Useful for tests or when the UI and Backend run in the same process.
+Creates an RPC client that calls endpoint methods directly in-process. Useful for tests or when the UI and Backend run
+in the same process.
 
 **Function Signature:**
 
@@ -485,7 +489,8 @@ The plugin requires no configuration and automatically adds the RpcService to th
 
 ## Error Handling
 
-The RPC package uses standard TypeScript/JavaScript error handling patterns. Methods may throw errors during execution, particularly when:
+The RPC package uses standard TypeScript/JavaScript error handling patterns. Methods may throw errors during execution,
+particularly when:
 
 - **Schema Validation Fails**: Zod schemas validate input and output data. Invalid data will throw validation errors.
 - **Method Execution Fails**: Implementation functions may throw errors based on their logic.
@@ -636,23 +641,31 @@ app.waitForService(RpcService, rpcService => {
 
 ## Best Practices
 
-1. **Separate Schemas from Implementation**: Always define your schemas first, then implement the methods separately. This promotes clear separation of concerns.
+1. **Separate Schemas from Implementation**: Always define your schemas first, then implement the methods separately.
+   This promotes clear separation of concerns.
 
-2. **Use Appropriate Method Types**: Choose the correct method type based on whether the operation is read-only (query), state-changing (mutation), or produces streaming data.
+2. **Use Appropriate Method Types**: Choose the correct method type based on whether the operation is read-only (query),
+   state-changing (mutation), or produces streaming data.
 
-3. **Validate Input and Output**: Always use Zod schemas to validate input and output types, ensuring type safety and preventing runtime errors.
+3. **Validate Input and Output**: Always use Zod schemas to validate input and output types, ensuring type safety and
+   preventing runtime errors.
 
-4. **Handle Abort Signals**: For stream methods, properly handle abort signals to allow proper cleanup and resource release.
+4. **Handle Abort Signals**: For stream methods, properly handle abort signals to allow proper cleanup and resource
+   release.
 
-5. **Use Semantic Names**: Choose clear, descriptive names for endpoints and methods to improve code readability and maintainability.
+5. **Use Semantic Names**: Choose clear, descriptive names for endpoints and methods to improve code readability and
+   maintainability.
 
-6. **Document Method Behavior**: Document the expected behavior of each method, including any side effects and error conditions.
+6. **Document Method Behavior**: Document the expected behavior of each method, including any side effects and error
+   conditions.
 
 7. **Test Edge Cases**: Include tests for edge cases such as empty method lists, single methods, and mixed method types.
 
-8. **Leverage Plugin Pattern**: Use the plugin pattern to register RPC endpoints in a way that integrates cleanly with the Token Ring application lifecycle.
+8. **Leverage Plugin Pattern**: Use the plugin pattern to register RPC endpoints in a way that integrates cleanly with
+   the Token Ring application lifecycle.
 
-9. **Use Local Client for Tests**: For unit tests where the UI and Backend run in the same process, use `createLocalRPCClient` instead of making actual HTTP calls.
+9. **Use Local Client for Tests**: For unit tests where the UI and Backend run in the same process, use
+   `createLocalRPCClient` instead of making actual HTTP calls.
 
 10. **Direct Endpoint Registration**: Always register the complete endpoint object with `registerEndpoint()` method.
 
@@ -848,13 +861,13 @@ import RpcService from '@tokenring-ai/rpc';
 
 ### Sub-path Exports
 
-| Export Path | Description |
-|-------------|-------------|
-| `@tokenring-ai/rpc` | Main entry point, exports `RpcService` |
-| `@tokenring-ai/rpc/createRPCEndpoint` | Helper function to create type-safe RPC endpoints from schemas and implementations |
-| `@tokenring-ai/rpc/createLocalRPCClient` | Creates an RPC client for direct in-process endpoint calls |
-| `@tokenring-ai/rpc/types` | All type definitions (RPCSchema, RPCImplementation, RpcMethod, RpcEndpoint, etc.) |
-| `@tokenring-ai/rpc/plugin` | Token Ring plugin that registers the RpcService automatically |
+| Export Path                              | Description                                                                        |
+|------------------------------------------|------------------------------------------------------------------------------------|
+| `@tokenring-ai/rpc`                      | Main entry point, exports `RpcService`                                             |
+| `@tokenring-ai/rpc/createRPCEndpoint`    | Helper function to create type-safe RPC endpoints from schemas and implementations |
+| `@tokenring-ai/rpc/createLocalRPCClient` | Creates an RPC client for direct in-process endpoint calls                         |
+| `@tokenring-ai/rpc/types`                | All type definitions (RPCSchema, RPCImplementation, RpcMethod, RpcEndpoint, etc.)  |
+| `@tokenring-ai/rpc/plugin`               | Token Ring plugin that registers the RpcService automatically                      |
 
 ### Plugin Export
 
