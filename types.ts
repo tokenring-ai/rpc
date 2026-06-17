@@ -1,10 +1,10 @@
 import type TokenRingApp from "@tokenring-ai/app";
-import type { z } from "zod";
+import type { z, ZodType, ZodUnknown } from "zod";
 
 export type RPCImplementation<T extends RPCSchema> = {
   [P in keyof T["methods"]]: T["methods"][P]["type"] extends "stream"
-    ? (args: z.infer<T["methods"][P]["input"]>, app: TokenRingApp, signal: AbortSignal) => AsyncGenerator<z.infer<T["methods"][P]["result"]>>
-    : (args: z.infer<T["methods"][P]["input"]>, app: TokenRingApp) => Promise<z.infer<T["methods"][P]["result"]>> | z.infer<T["methods"][P]["result"]>;
+    ? (args: z.output<T["methods"][P]["input"]>, app: TokenRingApp, signal: AbortSignal) => AsyncGenerator<z.input<T["methods"][P]["result"]>>
+    : (args: z.output<T["methods"][P]["input"]>, app: TokenRingApp) => Promise<z.input<T["methods"][P]["result"]>> | z.input<T["methods"][P]["result"]>;
 };
 export type RPCSchema = {
   name: string;
@@ -17,7 +17,7 @@ export type RPCSchema = {
     };
   };
 };
-export type RpcMethod<InputSchema extends z.ZodObject<any>, ResultSchema extends z.ZodTypeAny, Type extends "query" | "mutation" | "stream"> = {
+export type RpcMethod<InputSchema extends z.ZodObject<any>, ResultSchema extends ZodType | ZodUnknown, Type extends "query" | "mutation" | "stream"> = {
   type: Type;
   inputSchema: InputSchema;
   resultSchema: ResultSchema;
