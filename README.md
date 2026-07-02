@@ -691,7 +691,7 @@ bun test --coverage
 The test file `createRPCEndpoint.test.ts` covers the following scenarios:
 
 ```typescript
-import createTestingApp from "@tokenring-ai/app/test/createTestingApp";
+import createTestingApp from "@tokenring-ai/app/test/createTestingApp.test";
 import {describe, expect, it} from 'vitest';
 import {z} from 'zod';
 import {createRPCEndpoint} from './createRPCEndpoint';
