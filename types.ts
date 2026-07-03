@@ -1,5 +1,20 @@
 import type TokenRingApp from "@tokenring-ai/app";
-import type { z, ZodType, ZodUnknown } from "zod";
+import { z, ZodType, ZodUnknown } from "zod";
+
+export const SuccessSchema = z.object({
+  status: z.literal("success"),
+});
+export type SuccessResult = z.infer<typeof SuccessSchema>;
+
+export const ProviderNotFoundSchema = z.object({
+  status: z.literal("providerNotFound"),
+});
+export type ProviderNotFound = z.infer<typeof ProviderNotFoundSchema>;
+
+export const AgentNotFoundSchema = z.object({
+  status: z.literal("agentNotFound"),
+});
+export type AgentNotFound = z.infer<typeof AgentNotFoundSchema>;
 
 export type RPCImplementation<T extends RPCSchema> = {
   [P in keyof T["methods"]]: T["methods"][P]["type"] extends "stream"

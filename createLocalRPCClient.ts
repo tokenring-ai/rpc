@@ -7,24 +7,22 @@ import type { FunctionTypeOfRPCCall, RpcEndpoint, RpcMethod, RPCSchema } from ".
  */
 export default function createLocalRPCClient<T extends RPCSchema>(endpoint: RpcEndpoint, app: TokenRingApp) {
   return Object.fromEntries(
-    Object.keys(endpoint.methods).map(name => {
-      const method = endpoint.methods[name];
-
+    Object.entries(endpoint.methods).map(([name, method]) => {
       return [
         name,
         method.type === "stream"
           ? async function* (params: Record<string, unknown>, signal: AbortSignal) {
-            // Direct call to the generator function
-            const generator = (method as RpcMethod<typeof method.inputSchema, typeof method.resultSchema, "stream">).execute(params, app, signal);
-            for await (const value of generator) {
-              if (signal?.aborted) break;
-              yield value;
+              // Direct call to the generator function
+              const generator = (method as RpcMethod<typeof method.inputSchema, typeof method.resultSchema, "stream">).execute(params, app, signal);
+              for await (const value of generator) {
+                if (signal.aborted) break;
+                yield value;
+              }
             }
-          }
           : async (params: any) => {
-            // Direct call to the query/mutation function
-            return await method.execute(params, app, undefined as any);
-          },
+              // Direct call to the query/mutation function
+              return await method.execute(params, app, undefined as any);
+            },
       ];
     }),
   ) as {
