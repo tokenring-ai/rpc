@@ -24,7 +24,6 @@ export function createAgentStateSliceStream<Slice extends AgentStateSlice<any>, 
       return;
     }
 
-    let revision = 0;
     let last: Result | undefined;
 
     for await (const slice of agent.subscribeStateAsync(opts.SliceClass, signal)) {

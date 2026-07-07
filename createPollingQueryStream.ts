@@ -1,6 +1,6 @@
+import { setTimeout as delay } from "node:timers/promises";
 import type TokenRingApp from "@tokenring-ai/app";
 import { deepEquals } from "bun";
-import { setTimeout as delay } from "node:timers/promises";
 
 export type CreatePollingQueryStreamOptions<Args, Result> = {
   poll: (args: Args, app: TokenRingApp) => Promise<Result> | Result;

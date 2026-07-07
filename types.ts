@@ -1,5 +1,5 @@
 import type TokenRingApp from "@tokenring-ai/app";
-import { z, ZodType, ZodUnknown } from "zod";
+import { type ZodType, type ZodUnknown, z } from "zod";
 
 export const SuccessSchema = z.object({
   status: z.literal("success"),
