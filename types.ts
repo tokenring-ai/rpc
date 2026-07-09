@@ -45,6 +45,18 @@ export type RpcEndpoint = {
   path: string;
   methods: Record<string, RpcMethod<any, any, any>>;
 };
+export type TypedRpcEndpoint<T extends RPCSchema> = {
+  readonly name: string;
+  path: string;
+  methods: {
+    [P in keyof T["methods"]]: {
+      type: T["methods"][P]["type"];
+      inputSchema: T["methods"][P]["input"];
+      resultSchema: T["methods"][P]["result"];
+      execute: RPCImplementation<T>[P];
+    };
+  };
+};
 export type ResultOfRPCCall<T extends RPCSchema, K extends keyof T["methods"]> = z.output<T["methods"][K]["result"]>;
 export type ParamsOfRPCCall<T extends RPCSchema, K extends keyof T["methods"]> = z.input<T["methods"][K]["input"]>;
 export type FunctionTypeOfRPCCall<T extends RPCSchema, K extends keyof T["methods"]> = T["methods"][K]["type"] extends "stream"

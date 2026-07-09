@@ -1,11 +1,21 @@
 import type TokenRingApp from "@tokenring-ai/app";
-import type { FunctionTypeOfRPCCall, RPCSchema, RpcEndpoint, RpcMethod } from "./types.ts";
+import type { FunctionTypeOfRPCCall, RPCSchema, RpcEndpoint, RpcMethod, TypedRpcEndpoint } from "./types.ts";
 
 /**
  * Creates an RPC client that calls the endpoint methods directly in-process.
  * Useful for tests or when the UI and Backend run in the same process.
+ *
+ * `T` (the RPC schema) is inferred when a `TypedRpcEndpoint<T>` (i.e. the result
+ * of `createRPCEndpoint`) is passed. When the endpoint is retrieved from the
+ * runtime registry (`RpcService.getEndpoint`, which returns a loose `RpcEndpoint`),
+ * specify `<T>` explicitly so method calls stay type-checked.
  */
-export default function createLocalRPCClient<T extends RPCSchema>(endpoint: RpcEndpoint, app: TokenRingApp) {
+export function createLocalRPCClient<T extends RPCSchema>(
+  endpoint: TypedRpcEndpoint<T>,
+  app: TokenRingApp,
+): { [K in keyof T["methods"]]: FunctionTypeOfRPCCall<T, K> };
+export function createLocalRPCClient<T extends RPCSchema>(endpoint: RpcEndpoint, app: TokenRingApp): { [K in keyof T["methods"]]: FunctionTypeOfRPCCall<T, K> };
+export function createLocalRPCClient<T extends RPCSchema>(endpoint: TypedRpcEndpoint<T> | RpcEndpoint, app: TokenRingApp) {
   return Object.fromEntries(
     Object.entries(endpoint.methods).map(([name, method]) => {
       return [
@@ -29,3 +39,5 @@ export default function createLocalRPCClient<T extends RPCSchema>(endpoint: RpcE
     [K in keyof T["methods"]]: FunctionTypeOfRPCCall<T, K>;
   };
 }
+
+export default createLocalRPCClient;
