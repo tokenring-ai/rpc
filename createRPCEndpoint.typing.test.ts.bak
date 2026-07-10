@@ -1,5 +1,5 @@
-import { describe, expect, it } from "bun:test";
 import type TokenRingApp from "@tokenring-ai/app";
+import { describe, expect, it } from "bun:test";
 import { z } from "zod";
 import { createRPCEndpoint } from "./createRPCEndpoint.ts";
 import type { RPCSchema, TypedRpcEndpoint } from "./types.ts";
@@ -51,11 +51,11 @@ describe("createRPCEndpoint per-method typing", () => {
     const dummy = {} as TokenRingApp;
 
     // @ts-expect-error - missing required `n`
-    void endpoint.methods.addOne.execute({}, dummy);
+    endpoint.methods.addOne.execute({}, dummy);
     // @ts-expect-error - wrong type for `n`
-    void endpoint.methods.addOne.execute({ n: "no" }, dummy);
+    endpoint.methods.addOne.execute({ n: "no" }, dummy);
     // @ts-expect-error - query method is not a stream (no signal arg)
-    void endpoint.methods.addOne.execute({ n: 1 }, dummy, new AbortController().signal);
+    endpoint.methods.addOne.execute({ n: 1 }, dummy, new AbortController().signal);
     // @ts-expect-error - stream method requires a signal
     endpoint.methods.ticks.execute({}, dummy);
 

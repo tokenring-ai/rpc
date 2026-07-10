@@ -1,8 +1,8 @@
-import { describe, expect, it } from "bun:test";
 import type TokenRingApp from "@tokenring-ai/app";
+import { describe, expect, it } from "bun:test";
 import { z } from "zod";
-import createLocalRPCClient from "./createLocalRPCClient.ts";
 import { createRPCEndpoint } from "./createRPCEndpoint.ts";
+import createLocalRPCClient from "./createLocalRPCClient.ts";
 import type { RPCSchema } from "./types.ts";
 
 const schema = {
@@ -55,9 +55,9 @@ describe("createLocalRPCClient inference", () => {
     const client = createLocalRPCClient(endpoint, dummy);
 
     // @ts-expect-error - missing required `msg`
-    void client.echo({});
+    client.echo({});
     // @ts-expect-error - wrong type for `msg`
-    void client.echo({ msg: 5 });
+    client.echo({ msg: 5 });
     // @ts-expect-error - stream method requires a signal
     client.counter({ from: 0 });
 

@@ -1,5 +1,5 @@
-import { describe, expect, it } from "bun:test";
 import createTestingApp from "@tokenring-ai/app/test/createTestingApp.test";
+import { describe, expect, it } from "bun:test";
 import { createPollingQueryStream } from "./createPollingQueryStream.ts";
 
 describe("createPollingQueryStream", () => {

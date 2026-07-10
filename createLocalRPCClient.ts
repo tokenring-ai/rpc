@@ -10,12 +10,12 @@ import type { FunctionTypeOfRPCCall, RPCSchema, RpcEndpoint, RpcMethod, TypedRpc
  * runtime registry (`RpcService.getEndpoint`, which returns a loose `RpcEndpoint`),
  * specify `<T>` explicitly so method calls stay type-checked.
  */
-export function createLocalRPCClient<T extends RPCSchema>(
+function createLocalRPCClient<T extends RPCSchema>(
   endpoint: TypedRpcEndpoint<T>,
   app: TokenRingApp,
 ): { [K in keyof T["methods"]]: FunctionTypeOfRPCCall<T, K> };
-export function createLocalRPCClient<T extends RPCSchema>(endpoint: RpcEndpoint, app: TokenRingApp): { [K in keyof T["methods"]]: FunctionTypeOfRPCCall<T, K> };
-export function createLocalRPCClient<T extends RPCSchema>(endpoint: TypedRpcEndpoint<T> | RpcEndpoint, app: TokenRingApp) {
+function createLocalRPCClient<T extends RPCSchema>(endpoint: RpcEndpoint, app: TokenRingApp): { [K in keyof T["methods"]]: FunctionTypeOfRPCCall<T, K> };
+function createLocalRPCClient<T extends RPCSchema>(endpoint: TypedRpcEndpoint<T> | RpcEndpoint, app: TokenRingApp) {
   return Object.fromEntries(
     Object.entries(endpoint.methods).map(([name, method]) => {
       return [

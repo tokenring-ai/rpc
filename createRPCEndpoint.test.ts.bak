@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
 import createTestingApp from "@tokenring-ai/app/test/createTestingApp.test";
+import { beforeEach,describe,expect,it,mock } from "bun:test";
 import { z } from "zod";
 import { createRPCEndpoint } from "./createRPCEndpoint.ts";
-import type { RPCImplementation, RPCSchema, RpcMethod } from "./types.ts";
+import { type RPCImplementation, type RPCSchema, type RpcMethod } from "./types.ts";
 
 const testSchemas = {
   name: "Example RPC",
@@ -11,19 +11,19 @@ const testSchemas = {
     testQuery: {
       type: "query" as const,
       input: z.object({ message: z.string() }),
-      result: z.object({ response: z.string() }),
+      result: z.object({ response: z.string() })
     },
     testMutation: {
       type: "mutation" as const,
       input: z.object({ value: z.number() }),
-      result: z.object({ doubled: z.number() }),
+      result: z.object({ doubled: z.number() })
     },
     testStream: {
       type: "stream" as const,
       input: z.object({ count: z.number() }),
-      result: z.object({ number: z.number() }),
-    },
-  },
+      result: z.object({ number: z.number() })
+    }
+  }
 } satisfies RPCSchema;
 
 type TestSchema = typeof testSchemas;
@@ -39,18 +39,18 @@ describe("createRPCEndpoint", () => {
     schemas = testSchemas;
 
     implementation = {
-      testQuery: mock(async (args: any, _app: any) => {
+      testQuery: mock(async (args: any, app: any) => {
         return { response: `Received: ${args.message}` };
       }),
-      testMutation: mock(async (args: any, _app: any) => {
+      testMutation: mock(async (args: any, app: any) => {
         return { doubled: args.value * 2 };
       }),
-      testStream: mock(async function* (args: any, _app: any, signal: AbortSignal) {
+      testStream: mock(async function* (args: any, app: any, signal: AbortSignal) {
         for (let i = 0; i < args.count; i++) {
           if (signal?.aborted) break;
           yield { number: i };
         }
-      }),
+      })
     } as RPCImplementation<typeof schemas>;
   });
 
@@ -91,7 +91,7 @@ describe("createRPCEndpoint", () => {
     const emptySchemas: RPCSchema = {
       name: "Example RPC",
       path: "/api/empty",
-      methods: {},
+      methods: {}
     };
 
     const emptyImplementation: RPCImplementation<typeof emptySchemas> = {};
@@ -105,7 +105,10 @@ describe("createRPCEndpoint", () => {
   it("should preserve method implementations", async () => {
     const endpoint = createRPCEndpoint(schemas, implementation);
 
-    const result = await (endpoint.methods.testQuery as RpcMethod<any, any, "query">).execute({ message: "world" }, mockApp);
+    const result = await (endpoint.methods.testQuery as RpcMethod<any, any, "query">).execute(
+      { message: "world" },
+      mockApp
+    );
 
     expect(result).toEqual({ response: "Received: world" });
     expect(implementation.testQuery).toHaveBeenCalledWith({ message: "world" }, mockApp);
@@ -119,13 +122,13 @@ describe("createRPCEndpoint", () => {
         ping: {
           type: "query" as const,
           input: z.object({}),
-          result: z.object({ pong: z.boolean() }),
-        },
-      },
+          result: z.object({ pong: z.boolean() })
+        }
+      }
     };
 
     const singleMethodImplementation: RPCImplementation<typeof singleMethodSchemas> = {
-      ping: async (_args: any, _app: any) => ({ pong: true }),
+      ping: async (args: any, app: any) => ({ pong: true })
     };
 
     const endpoint = createRPCEndpoint(singleMethodSchemas, singleMethodImplementation);
@@ -148,7 +151,10 @@ describe("createRPCEndpoint", () => {
   it("should execute mutation method correctly", async () => {
     const endpoint = createRPCEndpoint(schemas, implementation);
 
-    const result = await (endpoint.methods.testMutation as RpcMethod<any, any, "mutation">).execute({ value: 5 }, mockApp);
+    const result = await (endpoint.methods.testMutation as RpcMethod<any, any, "mutation">).execute(
+      { value: 5 },
+      mockApp
+    );
 
     expect(result).toEqual({ doubled: 10 });
     expect(implementation.testMutation).toHaveBeenCalledWith({ value: 5 }, mockApp);
@@ -160,7 +166,11 @@ describe("createRPCEndpoint", () => {
     const results: any[] = [];
     const controller = new AbortController();
 
-    for await (const item of (endpoint.methods.testStream as RpcMethod<any, any, "stream">).execute({ count: 3 }, mockApp, controller.signal)) {
+    for await (const item of (endpoint.methods.testStream as RpcMethod<any, any, "stream">).execute(
+      { count: 3 },
+      mockApp,
+      controller.signal
+    )) {
       results.push(item);
     }
 
@@ -168,6 +178,8 @@ describe("createRPCEndpoint", () => {
   });
 
   it("should handle stream abortion", async () => {
+    const endpoint = createRPCEndpoint(schemas, implementation);
+
     const results: any[] = [];
     const controller = new AbortController();
 
@@ -182,14 +194,18 @@ describe("createRPCEndpoint", () => {
           // Small delay to allow abort to happen
           await new Promise(resolve => setTimeout(resolve, 1));
         }
-      },
+      }
     };
 
     const abortEndpoint = createRPCEndpoint(schemas, abortImpl);
 
     // Start streaming
     const streamPromise = (async () => {
-      for await (const item of (abortEndpoint.methods.testStream as RpcMethod<any, any, "stream">).execute({ count: 100 }, mockApp, controller.signal)) {
+      for await (const item of (abortEndpoint.methods.testStream as RpcMethod<any, any, "stream">).execute(
+        { count: 100 },
+        mockApp,
+        controller.signal
+      )) {
         results.push(item);
       }
     })();
