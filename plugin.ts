@@ -1,5 +1,6 @@
 import type { TokenRingPlugin } from "@tokenring-ai/app";
 import appRPC from "@tokenring-ai/app/rpc/app";
+import configRPC from "@tokenring-ai/app/rpc/config";
 import { z } from "zod";
 
 import packageJSON from "./package.json" with { type: "json" };
@@ -16,6 +17,7 @@ export default {
     const rpcService = new RpcService();
     app.addServices(rpcService);
     rpcService.registerEndpoint(appRPC);
+    rpcService.registerEndpoint(configRPC);
   },
   config: packageConfigSchema,
 } satisfies TokenRingPlugin<typeof packageConfigSchema>;
