@@ -690,7 +690,7 @@ app.waitForService(RpcService, rpcService => {
 
 ## Testing
 
-The package includes comprehensive tests for the `createRPCEndpoint` function using vitest.
+The package includes comprehensive tests for the `createRPCEndpoint` function using bun test.
 
 ### Running Tests
 
@@ -711,7 +711,7 @@ The test file `createRPCEndpoint.test.ts` covers the following scenarios:
 
 ```typescript
 import createTestingApp from "@tokenring-ai/app/test/createTestingApp.test";
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'bun:test';
 import {z} from 'zod';
 import {createRPCEndpoint} from './createRPCEndpoint';
 
@@ -826,7 +826,7 @@ The test suite covers:
 When creating your own RPC endpoints, follow this testing pattern:
 
 ```typescript
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'bun:test';
 import {z} from 'zod';
 import {createRPCEndpoint} from '@tokenring-ai/rpc/createRPCEndpoint';
 import createLocalRPCClient from '@tokenring-ai/rpc/createLocalRPCClient';
