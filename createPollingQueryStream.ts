@@ -1,6 +1,6 @@
 import { setTimeout as delay } from "node:timers/promises";
 import type TokenRingApp from "@tokenring-ai/app";
-import { deepEquals } from "bun";
+import { deepEqual } from "@tokenring-ai/one-frontend/src/lib/utils";
 
 export type CreatePollingQueryStreamOptions<Args, Result> = {
   poll: (args: Args, app: TokenRingApp) => Promise<Result> | Result;
@@ -8,7 +8,7 @@ export type CreatePollingQueryStreamOptions<Args, Result> = {
   intervalMs?: number;
 };
 
-const defaultEquals = (a: unknown, b: unknown) => deepEquals(a, b, true);
+const defaultEquals = (a: unknown, b: unknown) => deepEqual(a, b);
 
 export function createPollingQueryStream<Args, Result>(opts: CreatePollingQueryStreamOptions<Args, Result>) {
   const equals = opts.equals ?? defaultEquals;
