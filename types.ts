@@ -27,8 +27,8 @@ export type RPCSchema = {
   methods: {
     [method: string]: {
       type: "query" | "mutation" | "stream";
-      input: z.ZodSchema;
-      result: z.ZodSchema;
+      input: z.ZodType;
+      result: z.ZodType;
     };
   };
 };
