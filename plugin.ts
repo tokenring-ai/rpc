@@ -11,7 +11,7 @@ export default {
   version: packageJSON.version,
   description: packageJSON.description,
   install(app) {
-    const rpcService = app.addService(new RpcService());
+    const rpcService = app.addService(RpcService, new RpcService());
     rpcService.registerEndpoint(appRPC);
     rpcService.registerEndpoint(configRPC);
   },

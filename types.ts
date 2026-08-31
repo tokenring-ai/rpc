@@ -38,7 +38,7 @@ export type RpcMethod<InputSchema extends z.ZodObject<any>, ResultSchema extends
   resultSchema: ResultSchema;
   execute: Type extends "stream"
     ? (args: z.output<InputSchema>, app: TokenRingApp, signal: AbortSignal) => AsyncGenerator<z.input<ResultSchema>>
-    : (args: z.output<InputSchema>, app: TokenRingApp) => z.input<ResultSchema>;
+    : (args: z.output<InputSchema>, app: TokenRingApp) => Promise<z.input<ResultSchema>> | z.input<ResultSchema>;
 };
 export type RpcEndpoint = {
   readonly name: string;

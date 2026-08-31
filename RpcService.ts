@@ -11,7 +11,7 @@ export default class RpcService implements TokenRingService {
 
   getMethod = this.methodRegistry.get;
 
-  getInterface = this.endpoints.get;
+  getEndpoint = this.endpoints.get;
   getAllEndpoints = this.endpoints.valuesArray;
 
   registerEndpoint(endpoint: RpcEndpoint) {

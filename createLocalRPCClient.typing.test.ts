@@ -54,13 +54,40 @@ describe("createLocalRPCClient inference", () => {
     const dummy = {} as TokenRingApp;
     const client = createLocalRPCClient(endpoint, dummy);
 
-    // @ts-expect-error - missing required `msg`
-    void client.echo({});
-    // @ts-expect-error - wrong type for `msg`
-    void client.echo({ msg: 5 });
-    // @ts-expect-error - stream method requires a signal
-    client.counter({ from: 0 });
+    if (false) {
+      // @ts-expect-error - missing required `msg`
+      void client.echo({});
+      // @ts-expect-error - wrong type for `msg`
+      void client.echo({ msg: 5 });
+      // @ts-expect-error - stream method requires a signal
+      client.counter({ from: 0 });
+    }
 
     expect(true).toBe(true);
+  });
+
+  it("rejects invalid input at runtime", async () => {
+    const dummy = {} as TokenRingApp;
+    const client = createLocalRPCClient(endpoint, dummy);
+
+    await expect(client.echo({ msg: 5 } as never)).rejects.toThrow();
+  });
+
+  it("rejects invalid results at runtime", async () => {
+    const dummy = {} as TokenRingApp;
+    const badEndpoint = createRPCEndpoint(schema, {
+      async echo() {
+        return { echoed: 1 } as never;
+      },
+      async *counter() {
+        yield { n: "nope" } as never;
+      },
+    });
+    const client = createLocalRPCClient(badEndpoint, dummy);
+
+    await expect(client.echo({ msg: "hi" })).rejects.toThrow();
+
+    const gen = client.counter({ from: 0 }, new AbortController().signal);
+    await expect(gen.next()).rejects.toThrow();
   });
 });
