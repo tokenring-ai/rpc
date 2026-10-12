@@ -54,14 +54,15 @@ describe("createLocalRPCClient inference", () => {
     const dummy = {} as TokenRingApp;
     const client = createLocalRPCClient(endpoint, dummy);
 
-    if (false) {
+    // Never invoked: the body exists only so the compiler checks these calls.
+    const _compileTimeOnly = (): void => {
       // @ts-expect-error - missing required `msg`
       void client.echo({});
       // @ts-expect-error - wrong type for `msg`
       void client.echo({ msg: 5 });
       // @ts-expect-error - stream method requires a signal
       client.counter({ from: 0 });
-    }
+    };
 
     expect(true).toBe(true);
   });

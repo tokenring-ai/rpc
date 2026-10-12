@@ -1,3 +1,4 @@
+import { noteRegistration } from "@tokenring-ai/app/registrationOwner";
 import type { TokenRingService } from "@tokenring-ai/app/types";
 import KeyedRegistry from "@tokenring-ai/utility/registry/KeyedRegistry";
 import type { RpcEndpoint, RpcMethod } from "./types.ts";
@@ -17,7 +18,9 @@ export default class RpcService implements TokenRingService {
   registerEndpoint(endpoint: RpcEndpoint) {
     this.endpoints.set(endpoint.name, endpoint);
     for (const [methodName, method] of Object.entries(endpoint.methods)) {
-      this.methodRegistry.set(`${endpoint.path}.${methodName}`, method);
+      const methodId = `${endpoint.path}.${methodName}`;
+      this.methodRegistry.set(methodId, method);
+      noteRegistration("rpcMethods", methodId);
     }
   }
 }

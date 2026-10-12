@@ -16,10 +16,31 @@ export const AgentNotFoundSchema = z.object({
 });
 export type AgentNotFound = z.infer<typeof AgentNotFoundSchema>;
 
+/**
+ * Who is calling. Transports fill this from their session (the WebSocket
+ * resource uses the authenticated username); in-process clients pass nulls.
+ * Implementations that do not care simply omit the trailing parameter;
+ * direct callers (tests) may leave it out.
+ */
+export interface RpcCallContext {
+  username: string | null;
+}
+
+export const ANONYMOUS_RPC_CONTEXT: RpcCallContext = { username: null };
+
 export type RPCImplementation<T extends RPCSchema> = {
   [P in keyof T["methods"]]: T["methods"][P]["type"] extends "stream"
-    ? (args: z.output<T["methods"][P]["input"]>, app: TokenRingApp, signal: AbortSignal) => AsyncGenerator<z.input<T["methods"][P]["result"]>>
-    : (args: z.output<T["methods"][P]["input"]>, app: TokenRingApp) => Promise<z.input<T["methods"][P]["result"]>> | z.input<T["methods"][P]["result"]>;
+    ? (
+        args: z.output<T["methods"][P]["input"]>,
+        app: TokenRingApp,
+        signal: AbortSignal,
+        context?: RpcCallContext,
+      ) => AsyncGenerator<z.input<T["methods"][P]["result"]>>
+    : (
+        args: z.output<T["methods"][P]["input"]>,
+        app: TokenRingApp,
+        context?: RpcCallContext,
+      ) => Promise<z.input<T["methods"][P]["result"]>> | z.input<T["methods"][P]["result"]>;
 };
 export type RPCSchema = {
   name: string;
@@ -37,8 +58,8 @@ export type RpcMethod<InputSchema extends z.ZodObject<any>, ResultSchema extends
   inputSchema: InputSchema;
   resultSchema: ResultSchema;
   execute: Type extends "stream"
-    ? (args: z.output<InputSchema>, app: TokenRingApp, signal: AbortSignal) => AsyncGenerator<z.input<ResultSchema>>
-    : (args: z.output<InputSchema>, app: TokenRingApp) => Promise<z.input<ResultSchema>> | z.input<ResultSchema>;
+    ? (args: z.output<InputSchema>, app: TokenRingApp, signal: AbortSignal, context?: RpcCallContext) => AsyncGenerator<z.input<ResultSchema>>
+    : (args: z.output<InputSchema>, app: TokenRingApp, context?: RpcCallContext) => Promise<z.input<ResultSchema>> | z.input<ResultSchema>;
 };
 export type RpcEndpoint = {
   readonly name: string;

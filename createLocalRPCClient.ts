@@ -1,5 +1,5 @@
 import type TokenRingApp from "@tokenring-ai/app";
-import type { FunctionTypeOfRPCCall, RPCSchema, RpcEndpoint, RpcMethod, TypedRpcEndpoint } from "./types.ts";
+import { ANONYMOUS_RPC_CONTEXT, type FunctionTypeOfRPCCall, type RPCSchema, type RpcEndpoint, type RpcMethod, type TypedRpcEndpoint } from "./types.ts";
 
 /**
  * Creates an RPC client that calls the endpoint methods directly in-process.
@@ -23,7 +23,12 @@ function createLocalRPCClient<T extends RPCSchema>(endpoint: TypedRpcEndpoint<T>
         method.type === "stream"
           ? async function* (params: Record<string, unknown>, signal: AbortSignal) {
               // Direct call to the generator function
-              const generator = (method as RpcMethod<typeof method.inputSchema, typeof method.resultSchema, "stream">).execute(params, app, signal);
+              const generator = (method as RpcMethod<typeof method.inputSchema, typeof method.resultSchema, "stream">).execute(
+                params,
+                app,
+                signal,
+                ANONYMOUS_RPC_CONTEXT,
+              );
               for await (const value of generator) {
                 if (signal.aborted) break;
                 yield value;
@@ -31,7 +36,7 @@ function createLocalRPCClient<T extends RPCSchema>(endpoint: TypedRpcEndpoint<T>
             }
           : async (params: any) => {
               // Direct call to the query/mutation function
-              return await method.execute(params, app, undefined as any);
+              return await method.execute(params, app, ANONYMOUS_RPC_CONTEXT);
             },
       ];
     }),
